@@ -411,3 +411,22 @@ tests/
    |
    |———— FWB only ————→ ( fwb_rule_fixer ) ← (same path as above)
 
+
+All edges, labeled
+| From | To | Condition |
+| :--- | :--- | :--- |
+| parse | classify | always |
+| classify | ffm_rule_fixer | FFM present |
+| classify | fwb_rule_fixer | FFM absent, FWB only |
+| ffm_rule_fixer | ffm_validate | always |
+| ffm_validate | fwb_rule_fixer | PASS |
+| ffm_validate | rag_retriever | FAIL, tier < 2 |
+| rag_retriever | ffm_rule_fixer | retry FFM with RAG context |
+| rag_retriever | llm_corrector | RAG insufficient |
+| llm_corrector | ffm_validate | retry |
+| llm_corrector | human_escalate | tier 2 exhausted |
+| fwb_rule_fixer | fwb_validate | always |
+| fwb_validate | END | PASS |
+| fwb_validate | rag_retriever | FAIL, tier < 2 |
+| rag_retriever | fwb_rule_fixer | retry FWB with RAG context |
+| human_escalate | END(FAIL) | always |
