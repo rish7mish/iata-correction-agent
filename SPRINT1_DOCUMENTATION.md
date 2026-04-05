@@ -371,3 +371,43 @@ tests/
 - **TC2**: 2 errors fixed at tier 0, no LLM cost, confidence 0.90 and 0.95
 - **TC3**: unfixable error, escalates through all 3 tiers, ends FAIL — proves the safety net works
 
+
+[START]
+   |
+   ↓
+( parse )
+   |
+   ↓
+( classify )
+   |
+   |———— FFM only ————→ ( ffm_rule_fixer )
+   |                            |
+   |                            ↓
+   |                     ( ffm_validate )
+   |                      |           |
+   |                    PASS         FAIL
+   |                      |           |
+   |                      ↓           ↓
+   |             ( fwb_rule_fixer )  < tier? >
+   |                      |           |        |
+   |                      ↓          T0→T1    T2
+   |             ( fwb_validate )     |        |
+   |              |           |       ↓        ↓
+   |            PASS         FAIL  (rag_retriever)  (llm_corrector)
+   |              |           |       |        |
+   |              ↓           |       |        |
+   |           [END-PASS]     |       ↓        ↓
+   |                          |  back to    ( human_escalate )
+   |                         < tier? >          |
+   |                          |                 ↓
+   |                         T0→T1           [END-FAIL]
+   |                          |
+   |                          ↓
+   |                    (rag_retriever)
+   |                          |
+   |                    (llm_corrector)
+   |                          |
+   |                    back to fwb_validate
+   |
+   |———— FWB only ————→ ( fwb_rule_fixer ) ← (same path as above)
+
