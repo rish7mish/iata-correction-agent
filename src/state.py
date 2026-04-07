@@ -53,6 +53,14 @@ class ValidationResult(TypedDict):
     score: float
 
 
+class RagChunk(TypedDict):
+    issue_code: str      # which issue this chunk was retrieved for
+    heading: str         # section heading from the spec doc
+    source: str          # which spec file (e.g. 'error_correction')
+    text: str            # full chunk text
+    distance: float      # cosine distance — lower = more relevant
+
+
 class AgentState(TypedDict):
     raw_message: str
     parsed: ParsedMessage | None
@@ -66,3 +74,4 @@ class AgentState(TypedDict):
     validation_attempts: int
     status: Literal["PASS", "FAIL", "ESCALATED", "PARSE_ERROR"]
     final_message: str
+    rag_context: list[RagChunk]   # populated by rag_retriever_node

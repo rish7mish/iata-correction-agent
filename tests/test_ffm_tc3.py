@@ -1,6 +1,7 @@
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
+from unittest.mock import MagicMock, patch
 from src.graph import compile_graph
 
 FFM_TC3 = """\
@@ -16,13 +17,29 @@ LAST"""
 GRAPH = compile_graph()
 
 
+def _make_mock_client(response_text: str = "[]") -> MagicMock:
+    """Return a mock Anthropic client whose messages.create returns response_text."""
+    mock_content = MagicMock()
+    mock_content.text = response_text
+
+    mock_response = MagicMock()
+    mock_response.content = [mock_content]
+
+    mock_client = MagicMock()
+    mock_client.messages.create.return_value = mock_response
+    return mock_client
+
+
 def run(raw: str):
-    return GRAPH.invoke({
-        "raw_message": raw, "parsed": None, "parse_errors": [],
-        "message_type": "", "issues": [], "escalation_tier": 0,
-        "fixes_applied": [], "corrected_message": "", "validation_result": None,
-        "validation_attempts": 0, "status": "ESCALATED", "final_message": "",
-    })
+    # Patch _get_client so no real API call is made
+    with patch("src.nodes.llm_corrector._get_client", return_value=_make_mock_client("[]")):
+        return GRAPH.invoke({
+            "raw_message": raw, "parsed": None, "parse_errors": [],
+            "message_type": "", "issues": [], "escalation_tier": 0,
+            "fixes_applied": [], "corrected_message": "", "validation_result": None,
+            "validation_attempts": 0, "status": "ESCALATED", "final_message": "",
+            "rag_context": [],
+        })
 
 
 class TestTC3EscalationToFail:

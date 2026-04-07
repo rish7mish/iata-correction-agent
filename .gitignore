@@ -2,7 +2,7 @@ venv/
 __pycache__/
 *.pyc
 .env
-chroma_db/
+data/chroma_db/
 .pytest_cache/
 *.egg-info/
 dist/
